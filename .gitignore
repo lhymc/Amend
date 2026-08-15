@@ -1,0 +1,11 @@
+# OCR API token(不入库;本地文件,内容为 token 字符串)
+.token
+
+# 生成产物
+output/
+__pycache__/
+*.pyc
+
+# 输入目录(保留目录结构,不提交试卷图片)
+input/*
+!input/.gitkeep
