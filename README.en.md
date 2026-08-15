@@ -8,7 +8,7 @@ High-school English exam wrong-question workflow: scan images (PDF / photos) →
 - **Article structure**: each passage is a `##` heading block, blocks separated by `---`; reorder by dragging in your editor's outline view
 - **Quick question deletion**: every question is wrapped in `<!-- qN -->` comment boundaries — delete the whole block, no text-box selection needed
 - **Cloze options, one question per line**: multi-line options auto-merged, missing numbers filled in sequence, un-scanned options left blank (`44. A.  B. familiar …`), LaTeX `array` options auto-parsed
-- **Cloze fill-back**: for questions you got right, append `→ A` at the end of the option line, run fill.py to fill the answer into the passage (bold) and remove that option line
+- **Cloze fill-back**: for questions you got right, append an answer marker at the end of the option line (`→ A`, `= A`, `> A`, `(A)`, or a bare trailing letter), run fill.py to fill the answer into the passage (bold) and remove that option line
 - **Grammar-fill numbering**: known numbers anchor positions and gaps are filled (e.g. `58` at the 3rd blank → 56-63); answers whose handwriting underline OCR missed are auto-restored as blanks; handwritten Chinese notes (e.g. “伴随状语”) are removed without taking a blank slot
 - **Handwriting removal**: handwritten underlines/wavy lines stripped, while cloze/grammar blank numbers and word-guess target words are kept (stem keywords like `underlined` / `下划线` / `加粗`; rule table extensible)
 - **Cleaning report**: every run produces `report.md` listing deduped lines, stripped answer prefixes, removed underlines, filled numbers and restored blanks for manual spot-checks
