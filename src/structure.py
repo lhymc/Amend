@@ -190,13 +190,14 @@ def wrap_options(sec: Section) -> list[str]:
     return out
 
 
-# 阅读选项行统一前置一个 tab(与题干视觉分层)
+# 阅读选项行统一前置缩进(与题干视觉分层)
 OPTION_INDENT_RE = re.compile(r"^\s*[A-Da-d][.、]\s")
+OPTION_INDENT = "    "  # 4 空格(原 tab,改为空格便于打印预览)
 
 
 def indent_option_lines(lines: list[str]) -> list[str]:
-    """选项行(A. … / B. …)前置一个 tab。完形选项表行以数字开头,不受影响。"""
-    return ["\t" + ln.lstrip() if OPTION_INDENT_RE.match(ln) else ln for ln in lines]
+    """选项行(A. … / B. …)前置 4 空格缩进。完形选项表行以数字开头,不受影响。"""
+    return [OPTION_INDENT + ln.lstrip() if OPTION_INDENT_RE.match(ln) else ln for ln in lines]
 
 
 def build(pages, stem: str, report: Report, first_q=None, no_ask=False) -> str:
