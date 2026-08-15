@@ -1,10 +1,14 @@
-"""完形填回:选项行尾标 → A 后,把单词填回正文空位,并删除该选项行。
+"""完形填回:在选项行尾标注答案字母,把单词填回正文空位,并删除该选项行。
 
 用法:
   python -m src.fill <md文件> [md文件...]
 
-标记格式(在选项行末尾追加):
-  21. A. decent B. tolerant C. distant D. selfish → A
+标记格式(选项行末尾,任选一种):
+  21. A. decent B. tolerant C. distant D. selfish → A   箭头
+  21. A. decent B. tolerant C. distant D. selfish = A   等号
+  21. A. decent B. tolerant C. distant D. selfish > A   大于号
+  21. A. decent B. tolerant C. distant D. selfish (A)   括号
+  21. A. decent B. tolerant C. distant D. selfish A     裸字母
 效果:
   - 正文 $ \\underline{21} $ → **decent**
   - 该选项行删除(非错题彻底清掉)
@@ -14,12 +18,25 @@ import re
 import sys
 from pathlib import Path
 
-MARKER_RE = re.compile(r"\s*(?:→|➜|=>|->)\s*([A-Da-d])\s*$")
+# 行尾填回标记: 箭头/等号/大于号 → 括号 → 裸字母(与选项文本以空白分隔)
+MARKER_RE = re.compile(
+    r"\s*(?:→|➜|->|=>|>|=)\s*([A-Da-d])\s*$"
+    r"|\(\s*([A-Da-d])\s*\)\s*$"
+    r"|\s+([A-Da-d])\s*$"
+)
 OPTION_NUM_RE = re.compile(r"^\s*(\d{1,2})\s*[.、]\s")
 BLANK_RE = re.compile(r"\$?\s*\\underline\{(\d{1,2})\}\s*\$?")
 OPTION_TOKEN_RE = re.compile(r"[A-Da-d]\.")
 CJK_RE = re.compile(r"[\u4e00-\u9fff]")
 CLOZE_HEAD_RE = re.compile(r"^##\s*(完形)", re.I)
+
+
+def _marker_letter(line: str) -> str | None:
+    m = MARKER_RE.search(line)
+    if not m:
+        return None
+    letter = next((g for g in m.groups() if g), None)
+    return letter.upper() if letter else None
 
 
 def _option_word(line: str, letter: str) -> str:
@@ -45,9 +62,8 @@ def fill_file(path: Path, report) -> list[str]:
             in_cloze = bool(CLOZE_HEAD_RE.match(line))
             out_lines.append(line)
             continue
-        if in_cloze and MARKER_RE.search(line):
-            m_mark = MARKER_RE.search(line)
-            letter = m_mark.group(1)
+        if in_cloze and _marker_letter(line):
+            letter = _marker_letter(line)
             # 题号: 本行行首,或回溯最近的题号行(选项被 OCR 拆多行)
             num = None
             drop_from = None
