@@ -132,6 +132,7 @@ def _option_segments(line: str, report=None) -> list[tuple[str, str]]:
         seg = re.sub(r"\s+", " ", seg).strip()
         seg = re.sub(r"[.。、,，;；:：]+$", "", seg)  # 中文注释被删后残留的点号
         seg = re.sub(r"\(\s*\)", "", seg)  # 乱码残留的空括号
+        seg = re.sub(r"\s+([A-Da-d])$", "", seg)  # 行尾裸答案字母(如 "D. habit A" → "D. habit")
         seg = seg.strip()
         out.append((letter, seg))
     return out
