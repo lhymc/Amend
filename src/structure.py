@@ -190,6 +190,15 @@ def wrap_options(sec: Section) -> list[str]:
     return out
 
 
+# 阅读选项行统一前置一个 tab(与题干视觉分层)
+OPTION_INDENT_RE = re.compile(r"^\s*[A-Da-d][.、]\s")
+
+
+def indent_option_lines(lines: list[str]) -> list[str]:
+    """选项行(A. … / B. …)前置一个 tab。完形选项表行以数字开头,不受影响。"""
+    return ["\t" + ln.lstrip() if OPTION_INDENT_RE.match(ln) else ln for ln in lines]
+
+
 def build(pages, stem: str, report: Report, first_q=None, no_ask=False) -> str:
     """pages(ocr.Page) → 结构化错题 md 文本。"""
     sections = split_sections(pages, report)
@@ -204,6 +213,7 @@ def build(pages, stem: str, report: Report, first_q=None, no_ask=False) -> str:
     blocks: list[str] = []
     for sec in expanded:
         lines = wrap_questions(sec) if sec.kind == "阅读" else wrap_options(sec)
+        lines = indent_option_lines(lines)
         body = "\n".join(lines).strip("\n")
         blocks.append(f"## {sec.title}\n\n{body}".rstrip())
     md = f"# {stem}\n\n" + "\n\n---\n\n".join(blocks)
