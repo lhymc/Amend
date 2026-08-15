@@ -112,8 +112,12 @@ def dedupe_lines(lines: list[str], report) -> list[str]:
     return out
 
 
-def _option_segments(line: str) -> list[tuple[str, str]]:
-    """提取一行中的 (字母, 选项文本) 段,去掉 \\quad 与多余空白。"""
+# 完形选项里的手写中文注释(如 "tires 便疲劳" / "reach out 对某人造成")删除
+CJK_NOISE_RE = re.compile(r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\ufffd]+")
+
+
+def _option_segments(line: str, report=None) -> list[tuple[str, str]]:
+    """提取一行中的 (字母, 选项文本) 段,去掉 \\quad、手写中文注释与多余空白。"""
     out = []
     for m in re.finditer(OPTION_TOKEN_RE, line):
         letter = m.group(0)[0].upper()
@@ -121,8 +125,14 @@ def _option_segments(line: str) -> list[tuple[str, str]]:
         rest = line[start:]
         nxt = re.search(OPTION_TOKEN_RE, rest)
         end = start + nxt.start() if nxt else len(line)
-        seg = re.sub(r"\\quad", " ", line[start:end])
+        raw = re.sub(r"\\quad", " ", line[start:end])
+        if report is not None and CJK_NOISE_RE.search(raw):
+            report.cloze_gloss_removed.append(raw.strip()[:40])
+        seg = CJK_NOISE_RE.sub(" ", raw)
         seg = re.sub(r"\s+", " ", seg).strip()
+        seg = re.sub(r"[.。、,，;；:：]+$", "", seg)  # 中文注释被删后残留的点号
+        seg = re.sub(r"\(\s*\)", "", seg)  # 乱码残留的空括号
+        seg = seg.strip()
         out.append((letter, seg))
     return out
 
@@ -135,7 +145,7 @@ def _looks_option(line: str) -> bool:
     )
 
 
-def _parse_array(body: str) -> tuple[int | None, list[tuple[str, str]]]:
+def _parse_array(body: str, report) -> tuple[int | None, list[tuple[str, str]]]:
     """解析 $\\begin{array}...\\end{array}$: 返回 (题号|None, [(字母, 选项文本)])。
 
     示例: '52. \\quad A. \\quad ran out of\\\\C. \\quad cut down on' → (52, [('A','ran out of'),('C','cut down on')])
@@ -149,7 +159,7 @@ def _parse_array(body: str) -> tuple[int | None, list[tuple[str, str]]]:
         m = NUM_DOT_RE.search(row)
         if m and num is None:
             num = int(m.group(1))
-        segs.extend((l, t) for l, t in _option_segments(row) if t)
+        segs.extend((l, t) for l, t in _option_segments(row, report) if t)
     return num, segs
 
 
@@ -218,14 +228,14 @@ def rebuild_option_table(lines: list[str], report) -> list[str]:
         if "\\begin{array}" in ln:
             if "\\end{array}" in ln:
                 array_buf = []
-                num, segs = _parse_array(ln)
+                num, segs = _parse_array(ln, report)
             else:
                 array_buf = [ln]  # 跨行数组,继续缓冲
                 continue
         elif array_buf:
             array_buf.append(ln)
             if "\\end{array}" in ln:
-                num, segs = _parse_array("\n".join(array_buf))
+                num, segs = _parse_array("\n".join(array_buf), report)
                 array_buf = []
             else:
                 continue
@@ -235,7 +245,7 @@ def rebuild_option_table(lines: list[str], report) -> list[str]:
             if m and m.start() > 0:
                 report.stripped_prefix.append(ln[: m.start()].strip()[:30])
             # 答案前缀可能是 "A." 形式(如 "A. 26. A. rolled"),选项段须从题号之后提取
-            segs = _option_segments(ln[m.start():]) if m else _option_segments(ln)
+            segs = _option_segments(ln[m.start():], report) if m else _option_segments(ln, report)
             if not segs and num is None:
                 if ln.strip():
                     report.cloze_dropped.append(ln.strip()[:40])

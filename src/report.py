@@ -28,6 +28,7 @@ class Report:
         self.cloze_blank_options = []
         self.cloze_numjumps = []
         self.cloze_dropped = []
+        self.cloze_gloss_removed = []
         self.filled = []  # "21→decent"
         self.fill_warnings = []
 
@@ -96,6 +97,9 @@ class Report:
             if self.cloze_dropped:
                 p.append(f"- 丢弃杂行: {len(self.cloze_dropped)} 行")
                 p.append(f"  - 示例: {self._sample(self.cloze_dropped)}")
+            if self.cloze_gloss_removed:
+                p.append(f"- 删除选项手写中文注释: {len(self.cloze_gloss_removed)} 处")
+                p.append(f"  - 示例: {self._sample(self.cloze_gloss_removed)}")
         else:
             p.append("- 无完形选项表或无需重构")
         p.append("")
