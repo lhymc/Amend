@@ -21,6 +21,8 @@ pip install -r requirements.txt
 
 ## 配置 OCR Token
 
+OCR 使用 PaddleOCR, 请在 https://aistudio.baidu.com/account/accessToken 获取访问令牌
+
 `src/ocr.py` 按以下优先级读取 token(不入库):
 
 1. 环境变量 `AMEND_OCR_TOKEN`

@@ -21,6 +21,8 @@ pip install -r requirements.txt
 
 ## OCR Token
 
+We use PaddleOCR, so please access https://aistudio.baidu.com/account/accessToken to get your own token.
+
 `src/ocr.py` reads the token (never committed) in this order:
 
 1. Environment variable `AMEND_OCR_TOKEN`
