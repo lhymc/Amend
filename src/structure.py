@@ -194,6 +194,13 @@ def wrap_options(sec: Section) -> list[str]:
 OPTION_INDENT_RE = re.compile(r"^\s*[A-Da-d][.、]\s")
 OPTION_INDENT = "   "  # 3 空格
 
+# 题号行转义: "21. A. …" → "21\\. A. …"(避免 Markdown 有序列表在删除后自动重排序号)
+STEM_NUM_RE = re.compile(r"^(\s*\d{1,2})\s*[.、]\s")
+
+
+def escape_stem_number(line: str) -> str:
+    return STEM_NUM_RE.sub(r"\1\\. ", line) if STEM_NUM_RE.match(line) else line
+
 
 def indent_option_lines(lines: list[str]) -> list[str]:
     """选项行(A. … / B. …)前置 4 空格缩进。完形选项表行以数字开头,不受影响。"""
@@ -215,6 +222,7 @@ def build(pages, stem: str, report: Report, first_q=None, no_ask=False) -> str:
     for sec in expanded:
         lines = wrap_questions(sec) if sec.kind == "阅读" else wrap_options(sec)
         lines = indent_option_lines(lines)
+        lines = [escape_stem_number(ln) for ln in lines]
         body = "\n".join(lines).strip("\n")
         blocks.append(f"## {sec.title}\n\n{body}".rstrip())
     md = f"# {stem}\n\n" + "\n\n---\n\n".join(blocks)

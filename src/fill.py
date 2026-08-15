@@ -24,7 +24,7 @@ MARKER_RE = re.compile(
     r"|\(\s*([A-Da-d])\s*\)\s*$"
     r"|\s+([A-Da-d])\s*$"
 )
-OPTION_NUM_RE = re.compile(r"^\s*(\d{1,2})\s*[.、]\s")
+OPTION_NUM_RE = re.compile(r"^\s*(\d{1,2})\s*(?:\\?[.、])\s")
 BLANK_RE = re.compile(r"\$?\s*\\underline\{(\d{1,2})\}\s*\$?")
 OPTION_TOKEN_RE = re.compile(r"[A-Da-d]\.")
 CJK_RE = re.compile(r"[\u4e00-\u9fff]")
