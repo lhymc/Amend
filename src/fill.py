@@ -40,7 +40,7 @@ def _marker_letter(line: str) -> str | None:
 
 
 def _option_word(line: str, letter: str) -> str:
-    """取该选项的英文文本(去掉中文注释与后续选项)。"""
+    """取该选项的英文文本(去掉中文注释、行尾裸答案字母、后续选项)。"""
     pos = [m.start() for m in OPTION_TOKEN_RE.finditer(line)]
     dots = [i for i in pos if line[i : i + 2].upper().startswith(letter.upper())]
     if not dots:
@@ -50,6 +50,8 @@ def _option_word(line: str, letter: str) -> str:
     end = nxt[0] if nxt else len(line)
     seg = line[start:end]
     seg = CJK_RE.split(seg)[0]
+    seg = re.sub(r"\s+([A-Da-d])$", "", seg)  # 行尾裸答案字母(如 "pretend D" → "pretend")
+    seg = re.sub(r"^[A-Da-d]\.\s*", "", seg)  # 首部误带的选项字母(如 "A. decent" → "decent")
     return seg.strip()
 
 
