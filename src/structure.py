@@ -192,7 +192,7 @@ def wrap_options(sec: Section) -> list[str]:
 
 # 阅读选项行统一前置缩进(与题干视觉分层)
 OPTION_INDENT_RE = re.compile(r"^\s*[A-Da-d][.、]\s")
-OPTION_INDENT = "    "  # 4 空格(原 tab,改为空格便于打印预览)
+OPTION_INDENT = "   "  # 3 空格
 
 
 def indent_option_lines(lines: list[str]) -> list[str]:
